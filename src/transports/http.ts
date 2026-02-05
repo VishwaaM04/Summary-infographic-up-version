@@ -28,13 +28,16 @@ export async function startHttpServer() {
     });
 
     // --- GENERIC REST API ADAPTER (ChatGPT / Universal LLM Support) ---
-    const { toolDefinitions } = await import("../core/tools.js");
+    const { toolDefinitions, infographicToolDef } = await import("../core/tools.js");
+
+    // Merge standard tools with the special infographic tool for API/OpenAPI purposes
+    const allTools = [...toolDefinitions, infographicToolDef];
 
     // 1. OpenAPI Spec Endpoint
     app.get("/openapi.json", (req, res) => {
         const paths: any = {};
 
-        toolDefinitions.forEach(tool => {
+        allTools.forEach(tool => {
             paths[`/api/tools/${tool.name}`] = {
                 post: {
                     operationId: tool.name,
@@ -104,7 +107,7 @@ export async function startHttpServer() {
     // 2. Generic Tool Routes
     app.use(express.json()); // Ensure JSON body parsing
 
-    toolDefinitions.forEach(tool => {
+    allTools.forEach(tool => {
         app.post(`/api/tools/${tool.name}`, async (req, res) => {
             logToFile(`[REST] Call: ${tool.name}`);
             try {

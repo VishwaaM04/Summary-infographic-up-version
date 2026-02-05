@@ -240,7 +240,7 @@ export const toolDefinitions: ToolDefinition[] = [
 ];
 
 // Special App Tool Definition (kept separate due to registerAppTool Helper)
-const infographicToolDef = {
+export const infographicToolDef = {
     name: "generate_infographic",
     description: "Generates a visual infographic for a YouTube video using NotebookLM.",
     schema: z.object({
