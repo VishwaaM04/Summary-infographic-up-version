@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Infographic Viewer</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: sans-serif;
+            background: #f9f9f9;
+            display: flex;
+            justify-content: center;
+        }
+
+        #container {
+            width: 100%;
+            max-width: 1024px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #status {
+            color: #666;
+            font-style: italic;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div id="container">
+        <h2>NotebookLM Infographic</h2>
+        
+        <div id="progress-container" style="display: none; margin-bottom: 20px;">
+            <div style="width: 100%; background-color: #ddd; border-radius: 4px; overflow: hidden;">
+                <div id="progress-bar" style="width: 0%; height: 20px; background-color: #4CAF50; background-image: linear-gradient(45deg,rgba(255,255,255,.15) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.15) 50%,rgba(255,255,255,.15) 75%,transparent 75%,transparent); background-size: 1rem 1rem; transition: width 0.3s;"></div>
+            </div>
+            <p id="progress-text" style="font-size: 12px; margin-top: 5px;">Initializing...</p>
+        </div>
+
+        <div id="viewer">
+            <p id="status">Waiting for content...</p>
+        </div>
+
+        <div id="logs" style="text-align: left; font-family: monospace; font-size: 11px; max-height: 150px; overflow-y: auto; background: #eee; padding: 10px; border-radius: 4px; display: none; margin-top: 20px;">
+        </div>
+    </div>
+    <script type="module" src="./mcp-app.ts"></script>
+</body>
+
+</html>
