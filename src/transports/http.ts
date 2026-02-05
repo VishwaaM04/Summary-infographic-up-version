@@ -73,21 +73,39 @@ export async function startHttpServer() {
                             description: "Successful response",
                             content: {
                                 "application/json": {
-                                    schema: {
-                                        type: "object",
-                                        properties: {
-                                            content: {
-                                                type: "array",
-                                                items: {
-                                                    type: "object",
-                                                    properties: {
-                                                        type: { type: "string" },
-                                                        text: { type: "string" }
+                                    schema: tool.name === "generate_infographic"
+                                        ? {
+                                            type: "object",
+                                            properties: {
+                                                image_url: { type: "string" },
+                                                high_res_link: { type: "string" },
+                                                content: {
+                                                    type: "array",
+                                                    items: {
+                                                        type: "object",
+                                                        properties: {
+                                                            type: { type: "string" },
+                                                            text: { type: "string" }
+                                                        }
                                                     }
                                                 }
                                             }
                                         }
-                                    }
+                                        : {
+                                            type: "object",
+                                            properties: {
+                                                content: {
+                                                    type: "array",
+                                                    items: {
+                                                        type: "object",
+                                                        properties: {
+                                                            type: { type: "string" },
+                                                            text: { type: "string" }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
                                 }
                             }
                         }
@@ -134,8 +152,11 @@ export async function startHttpServer() {
                         logToFile(`[REST Progress] ${JSON.stringify(n)}`);
                     }
                 });
+
+                logToFile(`[HTTP Response] Tool ${tool.name} finished successfully. Sending JSON result.`);
                 res.json(result);
             } catch (e: any) {
+                logToFile(`[HTTP Response] Tool ${tool.name} FAILED: ${e.message}`);
                 res.status(500).json({ error: e.message });
             }
         });
@@ -165,21 +186,31 @@ export async function startHttpServer() {
     app.use("/static", express.static(path.join(__dirname, "../../dist")));
 
     // --- IMAGE PROXY (Avoid Google 429s and Cookies issues) ---
-    app.get("/api/proxy/image", async (req, res) => {
+    // Fake .jpg extension to trick ChatGPT markdown renderer
+    app.get(["/api/proxy/image", "/api/proxy/image.jpg"], async (req, res) => {
         const imageUrl = req.query.url as string;
         if (!imageUrl) return res.status(400).send("Missing URL");
+
+        logToFile(`[Proxy] Incoming request for: ${imageUrl.substring(0, 80)}...`);
 
         try {
             const { getClient } = await import("../core/state.js");
             const client = await getClient();
             const bytes = await client.downloadResource(imageUrl);
 
+            logToFile(`[Proxy] Successfully downloaded ${bytes.length} bytes for ${imageUrl.substring(0, 30)}...`);
+
             res.setHeader("Content-Type", "image/jpeg");
+            res.setHeader("Content-Disposition", "inline");
             res.setHeader("Cache-Control", "public, max-age=86400");
             res.send(bytes);
         } catch (e: any) {
-            logToFile(`[Proxy] Failed: ${e.message}`);
-            res.status(500).send("Proxy failed");
+            logToFile(`[Proxy] CRITICAL FAILURE for ${imageUrl.substring(0, 30)}: ${e.message}`);
+            // If it's a 429, log it explicitly
+            if (e.message.includes("429")) {
+                logToFile("[Proxy] ERROR: Google is rate-limiting the local server IP or session.");
+            }
+            res.status(500).send(`Proxy failed: ${e.message}`);
         }
     });
 

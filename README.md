@@ -115,13 +115,13 @@ To use this with the Claude Desktop app on your computer, add this to your `clau
 To let someone else access your running server (e.g., from their ChatGPT or Claude):
 
 1.  Start the server (Method A or B above).
-2.  Run this command in a terminal:
+3.  Run this command in a terminal (using your static domain):
     ```bash
-    ngrok http 3000
+    npx ngrok http 3000 --url=unflapping-aracely-sterlingly.ngrok-free.dev
     ```
-3.  Copy the **Forwarding URL** (e.g., `https://example.ngrok-free.app`).
+4.  Copy the **Forwarding URL**: `https://unflapping-aracely-sterlingly.ngrok-free.dev`
 
 **Connection Details for Remote User:**
-- **MCP Endpoint:** `https://your-url.ngrok-free.app/sse`
+- **MCP Endpoint:** `https://unflapping-aracely-sterlingly.ngrok-free.dev/sse`
 
 ---

@@ -1,0 +1,36 @@
+{
+    "manifest_version": 3,
+    "name": "NotebookLM Headless Generator",
+    "version": "2.0.0",
+    "description": "Generates NotebookLM infographics directly from the background",
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "scripting",
+        "storage"
+    ],
+    "host_permissions": [
+        "https://www.youtube.com/*",
+        "https://notebooklm.google.com/*",
+        "https://*.googleusercontent.com/*",
+        "https://accounts.google.com/*",
+        "https://*.google.com/*"
+    ],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "https://www.youtube.com/*"
+            ],
+            "js": [
+                "content/youtube_overlay.js"
+            ],
+            "css": [
+                "content/styles.css"
+            ],
+            "run_at": "document_idle"
+        }
+    ]
+}

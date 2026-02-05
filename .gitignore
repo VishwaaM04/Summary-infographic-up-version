@@ -8,3 +8,9 @@ payload_dump.txt
 .DS_Store
 __pycache__/
 *.pyc
+notebooklm_profile/
+server_live.log
+ngrok.log
+ngrok_public.log
+COOKIES_DEBUG_REPORT.json
+crash_debug.log

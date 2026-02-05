@@ -282,7 +282,20 @@ export const infographicToolDef = {
                 } catch (e) { }
             });
 
-            const proxyUrl = extra?.serverUrl ? `${extra.serverUrl}/api/proxy/image?url=${encodeURIComponent(dataUri)}` : dataUri;
+            // Force .jpg extension for ChatGPT renderer compatibility
+            const proxyUrl = extra?.serverUrl ? `${extra.serverUrl}/api/proxy/image.jpg?url=${encodeURIComponent(dataUri)}` : dataUri;
+
+            if (extra?.isRest) {
+                // USER REQUESTED: Direct image AND text link (no choosing)
+                logToFile(`[Infographic] Returning dual display for REST: ${proxyUrl}`);
+                return {
+                    image_url: proxyUrl,
+                    high_res_link: proxyUrl,
+                    content: [
+                        { type: "text", text: `![](${proxyUrl})\n\n[Download High Resolution](${proxyUrl})` }
+                    ]
+                };
+            }
 
             const responseContent: any[] = [
                 {
@@ -291,16 +304,18 @@ export const infographicToolDef = {
                 }
             ];
 
-            if (dataUri.startsWith("http")) {
+            if (dataUri.startsWith("http") && !extra?.isRest) {
                 try {
                     const imageBytes = await client.downloadResource(dataUri);
 
-                    // AGGRESSIVE OPTIMIZATION FOR REST (ChatGPT)
-                    // We need to stay under ~100KB for base64 to avoid ResponseTooLargeError
-                    const resizeWidth = extra?.isRest ? 800 : 1200;
-                    const quality = extra?.isRest ? 60 : 85;
+                    // AGGRESSIVE OPTIMIZATION FOR CHATGPT (REST)
+                    // We need to keep the total payload < 100KB to avoid ResponseTooLargeError.
+                    // 600px at 40% quality usually produces a ~20-40KB file.
+                    const isRest = !!extra?.isRest;
+                    const resizeWidth = isRest ? 600 : 1200;
+                    const quality = isRest ? 40 : 85;
 
-                    logToFile(`[Infographic] Processing image for ${extra?.isRest ? 'REST' : 'STDIO'} (Width: ${resizeWidth}, Quality: ${quality}%)`);
+                    logToFile(`[Infographic] Processing image for ${isRest ? 'REST' : 'STDIO'} (Width: ${resizeWidth}, Quality: ${quality}%)`);
 
                     const processedBuffer = await sharp(imageBytes, { failOnError: false })
                         .resize({ width: resizeWidth, withoutEnlargement: true })
@@ -313,21 +328,22 @@ export const infographicToolDef = {
                         mimeType: "image/jpeg"
                     });
 
-                    if (extra?.isRest) {
+                    if (isRest) {
                         responseContent.push({
                             type: "text",
-                            text: `\n\n*(Note: Displaying a compressed version for chat. Click the link above for full quality.)*`
+                            text: `\n\n*(Note: This is a compressed preview. Use the link above for the high-resolution version.)*`
                         });
                     }
 
                 } catch (err: any) {
-                    logToFile(`Image processing failed (returning text-only): ${err.message}`);
+                    logToFile(`Image processing failed: ${err.message}`);
                     responseContent.push({
                         type: "text",
-                        text: `\n\n*(Image gallery processing failed, but here is the link: ${dataUri})*`
+                        text: `\n\n*(Image processing failed, but here is the link: ${dataUri})*`
                     });
                 }
             }
+            logToFile(`[Infographic] Returning standard gallery for MCP: ${responseContent.length} items`);
             return { content: responseContent };
 
         } catch (e: any) {
@@ -375,6 +391,6 @@ export async function registerTools(server: McpServer) {
             inputSchema: infographicToolDef.schema as any,
             _meta: { ui: { resourceUri } },
         },
-        infographicToolDef.handler
+        infographicToolDef.handler as any
     );
 }

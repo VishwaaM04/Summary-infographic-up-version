@@ -387,7 +387,10 @@ export class NotebookLMClient {
         if (!this.context) throw new Error("Context failed to start");
 
         const response = await this.context.request.get(url, {
-            headers: { "Referer": "https://notebooklm.google.com/" }
+            headers: {
+                "Referer": "https://notebooklm.google.com/",
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+            }
         });
 
         if (!response.ok()) {
@@ -535,7 +538,8 @@ export class NotebookLMClient {
     async pollForArtifacts(notebookId: string, onProgress?: (status: string) => void): Promise<string> {
         logToFile("[NotebookLM] Polling for artifacts...");
         onProgress?.("Polling for generated infographic...");
-        for (let i = 0; i < 30; i++) {
+        // Extended timeout to 10 minutes (60 * 10s) for slower generations
+        for (let i = 0; i < 60; i++) {
             try {
                 const payload = [[2], notebookId, 'NOT artifact.status = "ARTIFACT_STATUS_SUGGESTED"'];
                 const response = await this._executeRpc(RPC_LIST_ARTIFACTS, payload);
@@ -549,8 +553,8 @@ export class NotebookLMClient {
                 }
             } catch (e) { }
             await new Promise(r => setTimeout(r, 10000));
-            logToFile(`[NotebookLM] Poll attempt ${i + 1}/30...`);
-            onProgress?.(`Waiting for generation (attempt ${i + 1}/30)...`);
+            logToFile(`[NotebookLM] Poll attempt ${i + 1}/60...`);
+            onProgress?.(`Waiting for generation (attempt ${i + 1}/60)...`);
         }
         throw new Error("Timeout waiting for artifact creation");
     }
