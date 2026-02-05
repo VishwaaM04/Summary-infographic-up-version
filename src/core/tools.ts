@@ -31,7 +31,7 @@ export interface ToolDefinition {
 export const toolDefinitions: ToolDefinition[] = [
     {
         name: "generate_summary",
-        schema: { url: z.string().url().describe("The URL of the YouTube video") },
+        schema: z.object({ url: z.string().url().describe("The URL of the YouTube video") }),
         handler: async ({ url }: { url: string }, extra: any) => {
             logToFile(`[MCP] Request: Summary for ${url}`);
             try {
@@ -111,11 +111,11 @@ export const toolDefinitions: ToolDefinition[] = [
     },
     {
         name: "ask_question",
-        schema: {
+        schema: z.object({
             question: z.string().describe("The question to ask"),
             url: z.string().optional().describe("Optional: The YouTube URL. If omitted, uses the last accessed notebook."),
             target_topic: z.string().optional().describe("Optional: A keyword or alias to switch context (e.g., 'gaming').")
-        },
+        }),
         handler: async ({ question, url, target_topic }: { question: string, url?: string, target_topic?: string }) => {
             const { catalog } = await import("./catalog.js");
 
@@ -171,7 +171,7 @@ export const toolDefinitions: ToolDefinition[] = [
     },
     {
         name: "list_notebooks",
-        schema: {},
+        schema: z.object({}),
         handler: async () => {
             const { catalog } = await import("./catalog.js");
             const notebooks = catalog.listNotebooks();
@@ -181,10 +181,10 @@ export const toolDefinitions: ToolDefinition[] = [
     },
     {
         name: "add_note_to_notebook",
-        schema: {
+        schema: z.object({
             text: z.string().describe("The text note to add."),
             target: z.string().optional().describe("Optional: video URL or topic keyword.")
-        },
+        }),
         handler: async ({ text, target }: { text: string, target?: string }) => {
             const { catalog } = await import("./catalog.js");
             let notebook;
@@ -210,9 +210,9 @@ export const toolDefinitions: ToolDefinition[] = [
     },
     {
         name: "delete_notebook",
-        schema: {
+        schema: z.object({
             target: z.string().describe("The video URL or topic keyword of the notebook to delete.")
-        },
+        }),
         handler: async ({ target }: { target: string }) => {
             const { catalog } = await import("./catalog.js");
             let notebook;
