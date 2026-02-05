@@ -185,6 +185,11 @@ export async function startHttpServer() {
     // Serve the dist directory so assets (js/css) can be loaded
     app.use("/static", express.static(path.join(__dirname, "../../dist")));
 
+    // Serve the UI at the root
+    app.get("/", (req, res) => {
+        res.sendFile(path.join(__dirname, "../../dist/src/mcp-app.html"));
+    });
+
     // --- IMAGE PROXY (Avoid Google 429s and Cookies issues) ---
     // Fake .jpg extension to trick ChatGPT markdown renderer
     app.get(["/api/proxy/image", "/api/proxy/image.jpg"], async (req, res) => {
