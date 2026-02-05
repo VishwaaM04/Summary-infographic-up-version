@@ -49,15 +49,17 @@ export async function startHttpServer() {
                             "application/json": {
                                 schema: {
                                     type: "object",
-                                    properties: Object.keys(tool.schema.shape || {}).reduce((acc: any, key) => {
-                                        const field = tool.schema.shape[key];
-                                        // Simple generic mapping for string/optional
-                                        acc[key] = {
-                                            type: "string",
-                                            description: field.description
-                                        };
-                                        return acc;
-                                    }, {})
+                                    properties: (() => {
+                                        if (!tool.schema || !tool.schema.shape) return {};
+                                        return Object.keys(tool.schema.shape).reduce((acc: any, key) => {
+                                            const field = tool.schema.shape[key];
+                                            acc[key] = {
+                                                type: "string",
+                                                description: field.description
+                                            };
+                                            return acc;
+                                        }, {});
+                                    })()
                                 }
                             }
                         }
