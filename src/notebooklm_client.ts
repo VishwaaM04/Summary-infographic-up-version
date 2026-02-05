@@ -559,18 +559,40 @@ export class NotebookLMClient {
         throw new Error("Timeout waiting for artifact creation");
     }
 
+    private pendingGenerations = new Map<string, Promise<string>>();
+
     async generateInfographic(videoUrl: string, onProgress?: (status: string) => void): Promise<string> {
-        const { notebookId, sourceId } = await this.prepareNotebook(videoUrl, onProgress);
-        logToFile("[NotebookLM] ⏳ Waiting 5s...");
-        onProgress?.("Waiting for source to process...");
-        await new Promise(r => setTimeout(r, 5000));
+        // DEDUPLICATION: Check if we are already generating this URL
+        if (this.pendingGenerations.has(videoUrl)) {
+            logToFile(`[NotebookLM] ♻️ Request Deduplication: Joining existing task for ${videoUrl}`);
+            onProgress?.("Joining existing generation task in progress...");
+            return this.pendingGenerations.get(videoUrl)!;
+        }
 
-        logToFile("[NotebookLM] 🚀 Triggering Infographic...");
-        onProgress?.("Triggering infographic generation...");
-        const triggerPayload = [[2], notebookId, [null, null, 7, [[[sourceId]]], null, null, null, null, null, null, null, null, null, null, [[null, null, null, 1, 2]]]];
-        await this._executeRpc(RPC_GENERATE_INFOGRAPHIC, triggerPayload);
+        logToFile(`[NotebookLM] ✨ Starting new generation task for ${videoUrl}`);
 
-        return await this.pollForArtifacts(notebookId, onProgress);
+        const task = (async () => {
+            try {
+                const { notebookId, sourceId } = await this.prepareNotebook(videoUrl, onProgress);
+                logToFile("[NotebookLM] ⏳ Waiting 5s...");
+                onProgress?.("Waiting for source to process...");
+                await new Promise(r => setTimeout(r, 5000));
+
+                logToFile("[NotebookLM] 🚀 Triggering Infographic...");
+                onProgress?.("Triggering infographic generation...");
+                const triggerPayload = [[2], notebookId, [null, null, 7, [[[sourceId]]], null, null, null, null, null, null, null, null, null, null, [[null, null, null, 1, 2]]]];
+                await this._executeRpc(RPC_GENERATE_INFOGRAPHIC, triggerPayload);
+
+                return await this.pollForArtifacts(notebookId, onProgress);
+            } finally {
+                // CLEANUP: Remove from pending map when done (success or throw)
+                this.pendingGenerations.delete(videoUrl);
+                logToFile(`[NotebookLM] 🏁 Task finished (or failed), clearing lock for ${videoUrl}`);
+            }
+        })();
+
+        this.pendingGenerations.set(videoUrl, task);
+        return task;
     }
 
     async queryNotebook(notebookId: string, sourceId: string, prompt: string): Promise<string> {

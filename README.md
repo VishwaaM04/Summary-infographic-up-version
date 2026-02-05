@@ -28,6 +28,11 @@ Examples often rewrite content. This server uses a **Structured Authority Protoc
 - **Port Management:** Automatically handles port 3000 conflicts.
 - **Auto-Recovery:** Detects and fixes browser crashes instantly.
 
+### 5. ⚡ Performance Optimizations (New!)
+- **Smart Deduplication:** If you (or ChatGPT) ask for the same video twice, the server joins the existing task instead of fighting itself.
+- **Turbo Polling:** Checks for completion every **3 seconds** (down from 10s) to get your result instantly.
+- **Hybrid Display:** Delivers both a raw image URL (for ChatGPT Custom GPTs) and a markdown preview (for standard Chat) automatically.
+
 ---
 
 ## 🛠️ Prerequisites

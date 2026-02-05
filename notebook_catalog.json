@@ -3,33 +3,33 @@
     "id": "269bc97f-fcaa-416a-ba26-f7c7369a8ad5",
     "sourceId": "f80c2144-1b88-4c6e-9948-80ef61de05c0",
     "videoUrl": "https://www.youtube.com/watch?v=vEvytl7wrGM",
-    "title": "Claude Skills Explained in 23 Minutes",
+    "title": "YouTube",
     "aliases": [],
-    "lastAccessed": 1770286129754
+    "lastAccessed": 1770294907445
   },
   {
     "id": "d9284be0-ab95-4cbd-b698-cf319f50a908",
     "sourceId": "f66dfd30-916f-418f-8606-8ed19fa03379",
     "videoUrl": "https://www.youtube.com/watch?v=7wa4Ey_tCCE",
-    "title": "Antigravity + Stitch MCP: AI Agents That Build Complete Websites",
+    "title": "YouTube",
     "aliases": [],
-    "lastAccessed": 1770283248206
+    "lastAccessed": 1770294917487
   },
   {
     "id": "ea2e5b6b-37fb-45e8-9b31-e17c51bf4bbc",
     "sourceId": "ddd58200-3fc1-4409-a5a1-6abe4c5eb00b",
     "videoUrl": "https://youtu.be/cskI6T49uhg?si=FdVt8ApUxN0xrLXt",
-    "title": "Google AntiGravity + Google Stitch is INSANE! 🤯",
+    "title": "YouTube",
     "aliases": [],
-    "lastAccessed": 1770285433534
+    "lastAccessed": 1770294912219
   },
   {
     "id": "34bb94ed-5430-415c-bcec-d7f2a89c8f21",
     "sourceId": "9cb4e88d-7539-4b77-9b37-076e26315845",
     "videoUrl": "https://youtu.be/_HQ2H_0Ayy0?si=O2DOOC9dKkV75NuA",
-    "title": "RAG Explained For Beginners",
+    "title": "YouTube",
     "aliases": [],
-    "lastAccessed": 1770286669578
+    "lastAccessed": 1770294902629
   },
   {
     "id": "b89c3921-599e-48a3-bd43-da3707b77a40",
@@ -37,7 +37,7 @@
     "videoUrl": "https://youtu.be/98wtarTjrHQ?si=PfzZeAWgmWWd-gap",
     "title": "YouTube",
     "aliases": [],
-    "lastAccessed": 1770293433379
+    "lastAccessed": 1770294879863
   },
   {
     "id": "8e9dcf61-97cf-46be-9cee-7a5960c34545",
@@ -45,6 +45,22 @@
     "videoUrl": "https://youtu.be/qhuS__jC4n8?si=zLS06axRiibZpbPi",
     "title": "YouTube",
     "aliases": [],
-    "lastAccessed": 1770291908262
+    "lastAccessed": 1770295035147
+  },
+  {
+    "id": "ff1f38f5-6d8d-469e-be03-c5e858fa9a7a",
+    "sourceId": "c0cff57e-7431-4ed1-aa15-06d82d1961bc",
+    "videoUrl": "https://youtu.be/nO7v5FDd_Qc?si=rIUAy2IqX8NkFdGS",
+    "title": "YouTube",
+    "aliases": [],
+    "lastAccessed": 1770295024226
+  },
+  {
+    "id": "62144e12-a2a6-4633-9781-043468400856",
+    "sourceId": "98ab1788-57e3-4d52-b6a8-78fa38dffbb8",
+    "videoUrl": "https://youtu.be/eICp03rrgp0?si=g6NLJJObdLK7_PEn",
+    "title": "YouTube",
+    "aliases": [],
+    "lastAccessed": 1770296172384
   }
 ]
