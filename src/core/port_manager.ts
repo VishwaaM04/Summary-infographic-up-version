@@ -36,8 +36,9 @@ export async function freePort(port: number): Promise<void> {
             }
         }
     } catch (e: any) {
-        if (e.message && e.message.includes("void")) {
-            // findstr might return exit code 1 if empty, which exec throws as error
+        // findstr returns exit code 1 if no matches are found.
+        // In this case, promisified exec throws an error with code 1.
+        if (e.code === 1) {
             logToFile(`[PortManager] Port ${port} is free.`);
         } else {
             logToFile(`[PortManager] Error checking/freeing port: ${e.message}`);
