@@ -45,6 +45,8 @@ Before you start, ensure you have:
 Open a terminal in the project folder and run:
 ```bash
 npm install
+# CRITICAL: This installs "tsx" and other required tools.
+# If you skip this, the server will NOT run.
 npm install -g ngrok
 ```
 
