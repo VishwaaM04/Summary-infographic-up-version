@@ -119,6 +119,7 @@ export async function startHttpServer() {
             try {
                 // MCP Tools expect { argName: value }, which matches standard JSON body
                 const result = await tool.handler(req.body, {
+                    isRest: true,
                     sendNotification: async (n: any) => {
                         // Optional: could stream progress via SSE if we were fancy, but for now just log
                         logToFile(`[REST Progress] ${JSON.stringify(n)}`);

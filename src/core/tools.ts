@@ -290,25 +290,34 @@ export const infographicToolDef = {
             ];
 
             if (dataUri.startsWith("http")) {
-                try {
-                    const imageBytes = await client.downloadResource(dataUri);
-                    const processedBuffer = await sharp(imageBytes, { failOnError: false })
-                        .resize({ width: 1024, withoutEnlargement: true })
-                        .jpeg({ quality: 85 })
-                        .toBuffer();
-
-                    responseContent.push({
-                        type: "image",
-                        data: processedBuffer.toString('base64'),
-                        mimeType: "image/jpeg"
-                    });
-
-                } catch (err: any) {
-                    logToFile(`Image processing failed (returning text-only): ${err.message}`);
+                // SKIP BASE64 FOR REST (ChatGPT/API) TO PREVENT ResponseTooLargeError
+                if (extra?.isRest) {
+                    logToFile("[REST] Skipping base64 image download for REST client to save bandwidth.");
                     responseContent.push({
                         type: "text",
-                        text: `\n\n*(Image processing failed, but here is the link: ${dataUri})*`
+                        text: `\n\n*(Note: High-resolution image available at the link above)*`
                     });
+                } else {
+                    try {
+                        const imageBytes = await client.downloadResource(dataUri);
+                        const processedBuffer = await sharp(imageBytes, { failOnError: false })
+                            .resize({ width: 1024, withoutEnlargement: true })
+                            .jpeg({ quality: 85 })
+                            .toBuffer();
+
+                        responseContent.push({
+                            type: "image",
+                            data: processedBuffer.toString('base64'),
+                            mimeType: "image/jpeg"
+                        });
+
+                    } catch (err: any) {
+                        logToFile(`Image processing failed (returning text-only): ${err.message}`);
+                        responseContent.push({
+                            type: "text",
+                            text: `\n\n*(Image processing failed, but here is the link: ${dataUri})*`
+                        });
+                    }
                 }
             }
             return { content: responseContent };

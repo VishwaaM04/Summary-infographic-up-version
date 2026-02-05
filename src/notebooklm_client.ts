@@ -466,13 +466,26 @@ export class NotebookLMClient {
             const sourcePayload = [[[null, null, null, null, null, null, null, [videoUrl], null, null, 1]], notebookId, [2], [1, null, null, null, null, null, null, null, null, null, [1]]];
             const sourceRes = await this._executeRpc(RPC_ADD_SOURCE, sourcePayload);
 
-            if (!sourceRes || !sourceRes[0]) throw new Error("Invalid Add Source Response");
+            if (!sourceRes || !sourceRes[0]) {
+                logToFile(`[NotebookLM] ❌ ERROR: Invalid Add Source Response for ${videoUrl}. Raw: ${JSON.stringify(sourceRes)}`);
+                throw new Error("Invalid Add Source Response");
+            }
 
             const rawInner = sourceRes[0][2];
-            const innerSource = JSON.parse(rawInner);
+            let innerSource: any;
+            try {
+                innerSource = JSON.parse(rawInner);
+            } catch (e) {
+                logToFile(`[NotebookLM] ❌ JSON ERROR: Failed to parse inner source data. Raw: ${rawInner}`);
+                throw new Error("Failed to parse source response");
+            }
+
             sourceId = this._findSourceId(innerSource);
 
-            if (!sourceId) throw new Error("Failed to add source (No ID found)");
+            if (!sourceId) {
+                logToFile(`[NotebookLM] ❌ ID ERROR: Could not find Source ID in payload. Search Structure: ${JSON.stringify(innerSource).substring(0, 500)}...`);
+                throw new Error("Failed to add source (No ID found)");
+            }
 
             logToFile(`[NotebookLM] Source Added: ${sourceId}`);
 
