@@ -64,6 +64,16 @@ export class NotebookLMClient {
 
         this.page = this.context.pages()[0] || await this.context.newPage();
         await this._refreshTokens();
+
+        // AUTO-SWITCH TO HEADLESS (User Request)
+        // If we started visibly (e.g. for login), and successfully got tokens,
+        // assume we should now switch to background mode.
+        if (!this.headless) {
+            logToFile("[NotebookLM] ✅ Login successful. Switching to Headless Mode for server operation...");
+            await this.stop();
+            this.headless = true;
+            await this.start();
+        }
     }
 
     async stop(): Promise<void> {
