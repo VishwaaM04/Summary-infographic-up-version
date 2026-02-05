@@ -49,7 +49,7 @@ export async function startHttpServer() {
                             "application/json": {
                                 schema: {
                                     type: "object",
-                                    properties: Object.keys(tool.schema.shape).reduce((acc: any, key) => {
+                                    properties: Object.keys(tool.schema.shape || {}).reduce((acc: any, key) => {
                                         const field = tool.schema.shape[key];
                                         // Simple generic mapping for string/optional
                                         acc[key] = {
