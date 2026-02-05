@@ -31,12 +31,12 @@ export interface ToolDefinition {
 export const toolDefinitions: ToolDefinition[] = [
     {
         name: "generate_summary",
-        schema: { video_url: z.string().url().describe("The URL of the YouTube video") },
-        handler: async ({ video_url }: { video_url: string }, extra: any) => {
-            logToFile(`[MCP] Request: Summary for ${video_url}`);
+        schema: { url: z.string().url().describe("The URL of the YouTube video") },
+        handler: async ({ url }: { url: string }, extra: any) => {
+            logToFile(`[MCP] Request: Summary for ${url}`);
             try {
                 const client = await getClient();
-                const summary = await client.generateSummary(video_url, async (status) => {
+                const summary = await client.generateSummary(url, async (status) => {
                     // Send strictly typed JSON-RPC notifications
                     try {
                         const progressToken = extra?._meta?.progressToken;
@@ -88,7 +88,7 @@ export const toolDefinitions: ToolDefinition[] = [
                         await loginClient.openLoginWindow();
                         try { await loginClient.stop(); } catch { }
                         const retryClient = await getClient();
-                        const summary = await retryClient.generateSummary(video_url);
+                        const summary = await retryClient.generateSummary(url);
 
                         // INSTRUCT CLAUDE TO BE VERBATIM (Retry path)
                         const structuredOutput = {
@@ -113,17 +113,17 @@ export const toolDefinitions: ToolDefinition[] = [
         name: "ask_question",
         schema: {
             question: z.string().describe("The question to ask"),
-            video_url: z.string().optional().describe("Optional: The YouTube URL. If omitted, uses the last accessed notebook."),
+            url: z.string().optional().describe("Optional: The YouTube URL. If omitted, uses the last accessed notebook."),
             target_topic: z.string().optional().describe("Optional: A keyword or alias to switch context (e.g., 'gaming').")
         },
-        handler: async ({ question, video_url, target_topic }: { question: string, video_url?: string, target_topic?: string }) => {
+        handler: async ({ question, url, target_topic }: { question: string, url?: string, target_topic?: string }) => {
             const { catalog } = await import("./catalog.js");
 
             // 1. Resolve Target Notebook
             let notebook;
-            if (video_url) {
+            if (url) {
                 // Explicit URL provided
-                notebook = catalog.getNotebookByUrl(video_url);
+                notebook = catalog.getNotebookByUrl(url);
             } else if (target_topic) {
                 // Topic switch
                 notebook = catalog.findNotebook(target_topic);
@@ -135,12 +135,12 @@ export const toolDefinitions: ToolDefinition[] = [
                 // Default to last accessed
                 notebook = catalog.getLastAccessed();
                 if (!notebook) {
-                    return { content: [{ type: "text", text: "I don't have a active notebook context. Please provide a video_url to start." }] };
+                    return { content: [{ type: "text", text: "I don't have a active notebook context. Please provide a url to start." }] };
                 }
             }
 
             // Determine URL to use
-            const targetUrl = video_url || notebook?.videoUrl;
+            const targetUrl = url || notebook?.videoUrl;
             if (!targetUrl) return wrapError("Could not resolve a video URL.");
 
             // Update Access Time
@@ -244,16 +244,16 @@ export const infographicToolDef = {
     name: "generate_infographic",
     description: "Generates a visual infographic for a YouTube video using NotebookLM.",
     schema: z.object({
-        video_url: z.string().describe("The URL of the YouTube video"),
+        url: z.string().describe("The URL of the YouTube video"),
     }),
-    handler: async ({ video_url }: { video_url: string }, extra: any) => {
-        logToFile(`[MCP] Request: Infographic for ${video_url}`);
+    handler: async ({ url }: { url: string }, extra: any) => {
+        logToFile(`[MCP] Request: Infographic for ${url}`);
         try {
             const client = await getClient();
 
             let step = 0;
             // Generate Infographic
-            const dataUri = await client.generateInfographic(video_url, async (status) => {
+            const dataUri = await client.generateInfographic(url, async (status) => {
                 step++;
                 try {
                     const progressToken = extra?._meta?.progressToken;

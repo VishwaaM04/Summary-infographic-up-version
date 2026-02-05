@@ -49,6 +49,7 @@ export async function startHttpServer() {
                             "application/json": {
                                 schema: {
                                     type: "object",
+                                    required: Object.keys(tool.schema.shape || {}).filter(k => !tool.schema.shape[k].isOptional()),
                                     properties: (() => {
                                         if (!tool.schema || !tool.schema.shape) return {};
                                         return Object.keys(tool.schema.shape).reduce((acc: any, key) => {
@@ -115,7 +116,7 @@ export async function startHttpServer() {
 
     allTools.forEach(tool => {
         app.post(`/api/tools/${tool.name}`, async (req, res) => {
-            logToFile(`[REST] Call: ${tool.name}`);
+            logToFile(`[REST] Call: ${tool.name} | Body: ${JSON.stringify(req.body)}`);
             try {
                 // MCP Tools expect { argName: value }, which matches standard JSON body
                 const result = await tool.handler(req.body, {
