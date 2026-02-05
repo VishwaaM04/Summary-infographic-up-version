@@ -101,7 +101,7 @@ export async function startHttpServer() {
             openapi: "3.1.0",
             info: {
                 title: "NotebookLM MCP Server",
-                version: "1.0.0",
+                version: "1.0.5-debug",
                 description: "API for NotebookLM interactions (Summary, Q&A, Infographics)"
             },
             servers: [
