@@ -92,6 +92,10 @@ export async function startHttpServer() {
             };
         });
 
+        const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+        const host = req.headers['host'];
+        const fullUrl = `${protocol}://${host}`;
+
         res.json({
             openapi: "3.1.0",
             info: {
@@ -100,7 +104,7 @@ export async function startHttpServer() {
                 description: "API for NotebookLM interactions (Summary, Q&A, Infographics)"
             },
             servers: [
-                { url: "/" } // Relative path - works with any host (tunnel or localhost)
+                { url: fullUrl }
             ],
             paths: paths
         });
