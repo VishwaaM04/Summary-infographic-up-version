@@ -22,19 +22,22 @@ export async function startHttpServer() {
         host: '0.0.0.0'
     });
 
-    // Add a health check
-    app.get("/health", (req, res) => {
-        res.json({ status: "ok" });
+    // --- DEBUG LOGGING ---
+    app.use((req, res, next) => {
+        logToFile(`[HTTP] Incoming: ${req.method} ${req.url} | Host: ${req.headers.host}`);
+        next();
     });
 
-    // --- GENERIC REST API ADAPTER (ChatGPT / Universal LLM Support) ---
-    const { toolDefinitions, infographicToolDef } = await import("../core/tools.js");
+    // 1. Health & OpenAPI (Top level to avoid middleware conflicts)
+    app.get("/health", (req, res) => {
+        res.json({ status: "ok", version: "1.0.5-debug" });
+    });
 
-    // Merge standard tools with the special infographic tool for API/OpenAPI purposes
+    const { toolDefinitions, infographicToolDef } = await import("../core/tools.js");
     const allTools = [...toolDefinitions, infographicToolDef];
 
-    // 1. OpenAPI Spec Endpoint
     app.get("/openapi.json", (req, res) => {
+        logToFile("[HTTP] Serving openapi.json");
         const paths: any = {};
 
         allTools.forEach(tool => {
@@ -119,8 +122,13 @@ export async function startHttpServer() {
             logToFile(`[REST] Call: ${tool.name} | Body: ${JSON.stringify(req.body)}`);
             try {
                 // MCP Tools expect { argName: value }, which matches standard JSON body
+                const protocol = req.headers['x-forwarded-proto'] || req.protocol;
+                const host = req.headers['host'];
+                const serverUrl = `${protocol}://${host}`;
+
                 const result = await tool.handler(req.body, {
                     isRest: true,
+                    serverUrl: serverUrl,
                     sendNotification: async (n: any) => {
                         // Optional: could stream progress via SSE if we were fancy, but for now just log
                         logToFile(`[REST Progress] ${JSON.stringify(n)}`);
@@ -155,6 +163,25 @@ export async function startHttpServer() {
     // Serve Static Files for Browser Testing
     // Serve the dist directory so assets (js/css) can be loaded
     app.use("/static", express.static(path.join(__dirname, "../../dist")));
+
+    // --- IMAGE PROXY (Avoid Google 429s and Cookies issues) ---
+    app.get("/api/proxy/image", async (req, res) => {
+        const imageUrl = req.query.url as string;
+        if (!imageUrl) return res.status(400).send("Missing URL");
+
+        try {
+            const { getClient } = await import("../core/state.js");
+            const client = await getClient();
+            const bytes = await client.downloadResource(imageUrl);
+
+            res.setHeader("Content-Type", "image/jpeg");
+            res.setHeader("Cache-Control", "public, max-age=86400");
+            res.send(bytes);
+        } catch (e: any) {
+            logToFile(`[Proxy] Failed: ${e.message}`);
+            res.status(500).send("Proxy failed");
+        }
+    });
 
     // Map the Resource URI path to the actual HTML file for direct browser access
     app.get("/ui/infographic/view.html", (req, res) => {

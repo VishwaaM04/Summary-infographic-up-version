@@ -282,42 +282,50 @@ export const infographicToolDef = {
                 } catch (e) { }
             });
 
+            const proxyUrl = extra?.serverUrl ? `${extra.serverUrl}/api/proxy/image?url=${encodeURIComponent(dataUri)}` : dataUri;
+
             const responseContent: any[] = [
                 {
                     type: "text",
-                    text: `Infographic generated successfully!\n\n**URL**: ${dataUri}`
+                    text: `Infographic generated successfully!\n\n**View High Resolution**: ${proxyUrl}`
                 }
             ];
 
             if (dataUri.startsWith("http")) {
-                // SKIP BASE64 FOR REST (ChatGPT/API) TO PREVENT ResponseTooLargeError
-                if (extra?.isRest) {
-                    logToFile("[REST] Skipping base64 image download for REST client to save bandwidth.");
+                try {
+                    const imageBytes = await client.downloadResource(dataUri);
+
+                    // AGGRESSIVE OPTIMIZATION FOR REST (ChatGPT)
+                    // We need to stay under ~100KB for base64 to avoid ResponseTooLargeError
+                    const resizeWidth = extra?.isRest ? 800 : 1200;
+                    const quality = extra?.isRest ? 60 : 85;
+
+                    logToFile(`[Infographic] Processing image for ${extra?.isRest ? 'REST' : 'STDIO'} (Width: ${resizeWidth}, Quality: ${quality}%)`);
+
+                    const processedBuffer = await sharp(imageBytes, { failOnError: false })
+                        .resize({ width: resizeWidth, withoutEnlargement: true })
+                        .jpeg({ quality: quality })
+                        .toBuffer();
+
                     responseContent.push({
-                        type: "text",
-                        text: `\n\n*(Note: High-resolution image available at the link above)*`
+                        type: "image",
+                        data: processedBuffer.toString('base64'),
+                        mimeType: "image/jpeg"
                     });
-                } else {
-                    try {
-                        const imageBytes = await client.downloadResource(dataUri);
-                        const processedBuffer = await sharp(imageBytes, { failOnError: false })
-                            .resize({ width: 1024, withoutEnlargement: true })
-                            .jpeg({ quality: 85 })
-                            .toBuffer();
 
-                        responseContent.push({
-                            type: "image",
-                            data: processedBuffer.toString('base64'),
-                            mimeType: "image/jpeg"
-                        });
-
-                    } catch (err: any) {
-                        logToFile(`Image processing failed (returning text-only): ${err.message}`);
+                    if (extra?.isRest) {
                         responseContent.push({
                             type: "text",
-                            text: `\n\n*(Image processing failed, but here is the link: ${dataUri})*`
+                            text: `\n\n*(Note: Displaying a compressed version for chat. Click the link above for full quality.)*`
                         });
                     }
+
+                } catch (err: any) {
+                    logToFile(`Image processing failed (returning text-only): ${err.message}`);
+                    responseContent.push({
+                        type: "text",
+                        text: `\n\n*(Image gallery processing failed, but here is the link: ${dataUri})*`
+                    });
                 }
             }
             return { content: responseContent };
