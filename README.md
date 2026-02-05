@@ -50,7 +50,10 @@ npm install -g ngrok
 
 ### 2. Authenticate with Google (First Time Only)
 Since NotebookLM requires a Google account, you need to log in once.
+
+**Important:** Make sure you are in the project folder first!
 ```bash
+cd Summary-Infographic-Final-stHTTP
 npm run login
 ```
 1.  A Chrome window will open.
@@ -58,9 +61,18 @@ npm run login
 3.  Once the "NotebookLM" dashboard loads, **close the window**.
 4.  Your session is now saved locally!
 
+### 3. First-Time Verification (Manual Run)
+Before using the double-click script or connecting Claude, run the server manually to ensure it connects:
+```bash
+npm start
+```
+- You should see: `Server started and connected successfully`.
+- **Keep this terminal open** for a minute to verify no errors pop up.
+- Once verified, you can close this window and use **Option A** (Double-Click) for daily use.
+
 ---
 
-## ▶️ Running the Server
+## ▶️ Running the Server (Daily Use)
 
 You have two ways to start the server:
 
